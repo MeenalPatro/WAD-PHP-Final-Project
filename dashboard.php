@@ -12,508 +12,423 @@ $stats = getDashboardStats($db, $role, $user_id);
 require_once 'includes/app_header.php';
 ?>
 
-<style>
-/* ===== DASHBOARD - LIGHT MODE ===== */
-.dash-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 14px;
-    margin-bottom: 20px;
-}
-.dash-stats .stat-box {
-    background: #ffffff;
-    border: 1px solid #e8ecf4;
-    border-radius: 14px;
-    padding: 16px 14px;
-    text-align: center;
-    transition: all 0.3s;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-.dash-stats .stat-box:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-    border-color: #dc3545;
-}
-.dash-stats .stat-box .icon {
-    font-size: 1.3rem;
-    margin-bottom: 6px;
-    display: block;
-}
-.dash-stats .stat-box .icon.red { color: #dc3545; }
-.dash-stats .stat-box .icon.orange { color: #fd7e14; }
-.dash-stats .stat-box .icon.blue { color: #0d6efd; }
-.dash-stats .stat-box .icon.green { color: #28a745; }
-.dash-stats .stat-box .icon.purple { color: #6f42c1; }
-.dash-stats .stat-box .icon.cyan { color: #0dcaf0; }
-
-.dash-stats .stat-box .value {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: #1a1a2e;
-    line-height: 1.2;
-}
-.dash-stats .stat-box .label {
-    font-size: 0.7rem;
-    color: #8e95a9;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 2px;
-}
-.dash-stats .stat-box .trend {
-    font-size: 0.65rem;
-    font-weight: 600;
-    padding: 1px 10px;
-    border-radius: 10px;
-    display: inline-block;
-    margin-top: 4px;
-}
-.dash-stats .stat-box .trend.up { background: #e8f5e9; color: #28a745; }
-.dash-stats .stat-box .trend.down { background: #fce4ec; color: #dc3545; }
-
-/* Cards */
-.dash-card {
-    background: #ffffff;
-    border: 1px solid #e8ecf4;
-    border-radius: 14px;
-    overflow: hidden;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-.dash-card .head {
-    padding: 12px 18px;
-    background: #f8f9fc;
-    border-bottom: 1px solid #e8ecf4;
-    color: #1a1a2e;
-    font-weight: 600;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.dash-card .head i { color: #dc3545; }
-.dash-card .body { padding: 14px 18px; color: #1a1a2e; }
-.dash-card .body.p-0 { padding: 0; }
-
-/* ===== MAP - SMALLER SIZE ===== */
-#emergencyMap {
-    height: 250px;
-    width: 100%;
-    background: #f5f6fa;
-    border-radius: 0 0 14px 14px;
-}
-
-/* Table */
-.table-scroll {
-    overflow-x: auto;
-    max-height: 320px;
-    overflow-y: auto;
-}
-.table-scroll::-webkit-scrollbar { width: 4px; }
-.table-scroll::-webkit-scrollbar-track { background: #f5f6fa; }
-.table-scroll::-webkit-scrollbar-thumb { background: #dc3545; border-radius: 4px; }
-
-.dash-card table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
-    color: #1a1a2e;
-}
-.dash-card table th {
-    padding: 10px 14px;
-    text-align: left;
-    font-weight: 600;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    color: #8e95a9;
-    border-bottom: 1px solid #e8ecf4;
-    background: #fafbfc;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-}
-.dash-card table td {
-    padding: 9px 14px;
-    border-bottom: 1px solid #f0f2f8;
-    vertical-align: middle;
-}
-.dash-card table tr:hover td { background: #f8f9fc; }
-
-/* Badges - Light Mode */
-.badge-priority {
-    padding: 2px 12px;
-    border-radius: 10px;
-    font-size: 0.65rem;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-.badge-priority.critical { background: #fce4ec; color: #c62828; }
-.badge-priority.high { background: #fff3e0; color: #e65100; }
-.badge-priority.medium { background: #fff8e1; color: #f57f17; }
-.badge-priority.low { background: #e8f5e9; color: #2e7d32; }
-
-.badge-status {
-    padding: 2px 12px;
-    border-radius: 10px;
-    font-size: 0.65rem;
-    font-weight: 500;
-}
-.badge-status.pending { background: #fff8e1; color: #f57f17; }
-.badge-status.assigned { background: #e3f2fd; color: #0d47a1; }
-.badge-status.in_progress { background: #e8eaf6; color: #283593; }
-.badge-status.completed { background: #e8f5e9; color: #1b5e20; }
-.badge-status.cancelled { background: #fce4ec; color: #c62828; }
-
-.btn-sm-outline {
-    padding: 3px 12px;
-    border-radius: 8px;
-    font-size: 0.7rem;
-    border: 1px solid #e0e0e0;
-    background: #fafbfc;
-    color: #5a607a;
-    text-decoration: none;
-    transition: all 0.3s;
-    display: inline-block;
-}
-.btn-sm-outline:hover {
-    background: #dc3545;
-    color: #fff;
-    border-color: #dc3545;
-}
-
-/* Charts */
-.dash-card canvas {
-    max-height: 180px;
-    width: 100% !important;
-    height: auto !important;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .dash-stats {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-    .dash-stats .stat-box .value { font-size: 1.2rem; }
-    #emergencyMap { height: 200px; }
-    .dash-card .body { padding: 10px 12px; }
-    .dash-card table { font-size: 0.75rem; }
-    .dash-card table th,
-    .dash-card table td { padding: 6px 10px; }
-}
-
-@media (max-width: 480px) {
-    .dash-stats {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-    }
-    .dash-stats .stat-box { padding: 12px 8px; }
-    .dash-stats .stat-box .value { font-size: 1rem; }
-    .dash-stats .stat-box .icon { font-size: 1rem; }
-    #emergencyMap { height: 160px; }
-}
-
-.avail-dot {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    margin-right: 4px;
-}
-.avail-dot.available { background: #28a745; }
-.avail-dot.busy { background: #ffc107; }
-.avail-dot.offline { background: #9e9e9e; }
-
-.loading-text {
-    text-align: center;
-    padding: 30px 0;
-    color: #b0b6c8;
-}
-.loading-text i { color: #dc3545; }
-
-/* Leaflet Override */
-.leaflet-popup-content-wrapper {
-    border-radius: 12px !important;
-}
-.leaflet-popup-content {
-    color: #1a1a2e !important;
-}
-
-/* Make content scrollable */
-.app-content {
-    max-height: calc(100vh - 70px);
-    overflow-y: auto;
-}
-.app-content::-webkit-scrollbar { width: 4px; }
-.app-content::-webkit-scrollbar-track { background: #f5f6fa; }
-.app-content::-webkit-scrollbar-thumb { background: #dc3545; border-radius: 4px; }
-</style>
-
-<!-- ===== STATS ===== -->
-<div class="dash-stats" data-aos="fade-up">
+<div class="dashboard-stat-grid row g-4 mb-4" data-aos="fade-up">
     <?php if ($role === 'admin'): ?>
-        <div class="stat-box"><span class="icon red"><i class="fas fa-exclamation-triangle"></i></span><div class="value counter" data-target="<?php echo $stats['total_requests'] ?? 0; ?>">0</div><div class="label">Total Requests</div><span class="trend up">↑ 12%</span></div>
-        <div class="stat-box"><span class="icon orange"><i class="fas fa-spinner"></i></span><div class="value counter" data-target="<?php echo $stats['active_requests'] ?? 0; ?>">0</div><div class="label">Active</div><span class="trend up">↑ 5%</span></div>
-        <div class="stat-box"><span class="icon blue"><i class="fas fa-hands-helping"></i></span><div class="value counter" data-target="<?php echo $stats['total_volunteers'] ?? 0; ?>">0</div><div class="label">Volunteers</div><span class="trend up">↑ 8%</span></div>
-        <div class="stat-box"><span class="icon green"><i class="fas fa-building"></i></span><div class="value counter" data-target="<?php echo $stats['total_ngos'] ?? 0; ?>">0</div><div class="label">NGOs</div><span class="trend up">↑ 3%</span></div>
-        <div class="stat-box"><span class="icon purple"><i class="fas fa-search"></i></span><div class="value counter" data-target="<?php echo $stats['missing_persons'] ?? 0; ?>">0</div><div class="label">Missing</div><span class="trend down">↓ 2%</span></div>
-        <div class="stat-box"><span class="icon cyan"><i class="fas fa-heart"></i></span><div class="value counter" data-target="<?php echo $stats['safe_checkins'] ?? 0; ?>">0</div><div class="label">Check-ins 24h</div><span class="trend up">↑ 15%</span></div>
+        <div class="col-6 col-lg-2"><div class="stat-card"><div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div><div class="stat-value"><?php echo $stats['total_requests'] ?? 0; ?></div><div class="stat-label">Total Requests</div></div></div>
+        <div class="col-6 col-lg-2"><div class="stat-card"><div class="stat-icon orange"><i class="fas fa-spinner"></i></div><div class="stat-value"><?php echo $stats['active_requests'] ?? 0; ?></div><div class="stat-label">Active</div></div></div>
+        <div class="col-6 col-lg-2"><div class="stat-card"><div class="stat-icon blue"><i class="fas fa-hands-helping"></i></div><div class="stat-value"><?php echo $stats['total_volunteers'] ?? 0; ?></div><div class="stat-label">Volunteers</div></div></div>
+        <div class="col-6 col-lg-2"><div class="stat-card"><div class="stat-icon green"><i class="fas fa-building"></i></div><div class="stat-value"><?php echo $stats['total_ngos'] ?? 0; ?></div><div class="stat-label">NGOs</div></div></div>
+        <div class="col-6 col-lg-2"><div class="stat-card"><div class="stat-icon"><i class="fas fa-search"></i></div><div class="stat-value"><?php echo $stats['missing_persons'] ?? 0; ?></div><div class="stat-label">Missing</div></div></div>
+        <div class="col-6 col-lg-2"><div class="stat-card"><div class="stat-icon green"><i class="fas fa-heart"></i></div><div class="stat-value"><?php echo $stats['safe_checkins'] ?? 0; ?></div><div class="stat-label">Check-ins 24h</div></div></div>
     <?php elseif ($role === 'citizen'): ?>
-        <div class="stat-box"><span class="icon red"><i class="fas fa-file-alt"></i></span><div class="value counter" data-target="<?php echo $stats['my_requests'] ?? 0; ?>">0</div><div class="label">My Requests</div></div>
-        <div class="stat-box"><span class="icon orange"><i class="fas fa-clock"></i></span><div class="value counter" data-target="<?php echo $stats['pending'] ?? 0; ?>">0</div><div class="label">Pending</div></div>
-        <div class="stat-box"><span class="icon green"><i class="fas fa-check"></i></span><div class="value counter" data-target="<?php echo $stats['completed'] ?? 0; ?>">0</div><div class="label">Completed</div></div>
-        <div class="stat-box"><span class="icon blue"><i class="fas fa-shield-alt"></i></span><div class="value counter" data-target="<?php echo $stats['checkins'] ?? 0; ?>">0</div><div class="label">Safe Check-ins</div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon"><i class="fas fa-file-alt"></i></div><div class="stat-value"><?php echo $stats['my_requests'] ?? 0; ?></div><div class="stat-label">My Requests</div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon orange"><i class="fas fa-clock"></i></div><div class="stat-value"><?php echo $stats['pending'] ?? 0; ?></div><div class="stat-label">Pending</div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon green"><i class="fas fa-check"></i></div><div class="stat-value"><?php echo $stats['completed'] ?? 0; ?></div><div class="stat-label">Completed</div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon blue"><i class="fas fa-shield-alt"></i></div><div class="stat-value"><?php echo $stats['checkins'] ?? 0; ?></div><div class="stat-label">Safe Check-ins</div></div></div>
     <?php elseif ($role === 'volunteer'): ?>
-        <div class="stat-box"><span class="icon red"><i class="fas fa-tasks"></i></span><div class="value counter" data-target="<?php echo $stats['active_tasks'] ?? 0; ?>">0</div><div class="label">Active Tasks</div></div>
-        <div class="stat-box"><span class="icon green"><i class="fas fa-check-double"></i></span><div class="value counter" data-target="<?php echo $stats['completed_tasks'] ?? 0; ?>">0</div><div class="label">Completed</div></div>
-        <div class="stat-box"><span class="icon blue"><i class="fas fa-bullhorn"></i></span><div class="value counter" data-target="<?php echo $stats['available_nearby'] ?? 0; ?>">0</div><div class="label">Open Urgent</div></div>
-        <div class="stat-box">
-            <span class="icon <?php echo ($stats['availability'] ?? 'offline') === 'available' ? 'green' : (($stats['availability'] ?? 'offline') === 'busy' ? 'orange' : ''); ?>">
-                <i class="fas fa-circle"></i>
-            </span>
-            <div class="value" style="font-size:1rem;">
-                <span class="avail-dot <?php echo $stats['availability'] ?? 'offline'; ?>"></span>
-                <?php echo ucfirst($stats['availability'] ?? 'offline'); ?>
-            </div>
-            <div class="label">Status</div>
-        </div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon"><i class="fas fa-tasks"></i></div><div class="stat-value"><?php echo $stats['active_tasks'] ?? 0; ?></div><div class="stat-label">Active Tasks</div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-double"></i></div><div class="stat-value"><?php echo $stats['completed_tasks'] ?? 0; ?></div><div class="stat-label">Completed</div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon blue"><i class="fas fa-bullhorn"></i></div><div class="stat-value"><?php echo $stats['available_nearby'] ?? 0; ?></div><div class="stat-label">Open Urgent</div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon orange"><i class="fas fa-circle"></i></div><div class="stat-value" style="font-size:1.2rem;"><?php echo ucfirst($stats['availability'] ?? 'offline'); ?></div><div class="stat-label">Status</div></div></div>
     <?php elseif ($role === 'ngo'): ?>
-        <div class="stat-box"><span class="icon red"><i class="fas fa-boxes"></i></span><div class="value counter" data-target="<?php echo $stats['total_resources'] ?? 0; ?>">0</div><div class="label">Total Resources</div></div>
-        <div class="stat-box"><span class="icon green"><i class="fas fa-campground"></i></span><div class="value counter" data-target="<?php echo $stats['active_camps'] ?? 0; ?>">0</div><div class="label">Active Camps</div></div>
-        <div class="stat-box"><span class="icon <?php echo ($stats['verified'] ?? 'Pending') === 'Yes' ? 'green' : 'orange'; ?>"><i class="fas fa-certificate"></i></span><div class="value" style="font-size:1rem;"><?php echo $stats['verified'] ?? 'Pending'; ?></div><div class="label">Verification</div></div>
+        <div class="col-md-4"><div class="stat-card"><div class="stat-icon"><i class="fas fa-boxes"></i></div><div class="stat-value"><?php echo $stats['total_resources'] ?? 0; ?></div><div class="stat-label">Total Resources</div></div></div>
+        <div class="col-md-4"><div class="stat-card"><div class="stat-icon green"><i class="fas fa-campground"></i></div><div class="stat-value"><?php echo $stats['active_camps'] ?? 0; ?></div><div class="stat-label">Active Camps</div></div></div>
+        <div class="col-md-4"><div class="stat-card"><div class="stat-icon blue"><i class="fas fa-certificate"></i></div><div class="stat-value" style="font-size:1.2rem;"><?php echo $stats['verified'] ?? 'Pending'; ?></div><div class="stat-label">Verification</div></div></div>
     <?php endif; ?>
 </div>
 
-<!-- ===== MAP - SMALLER SIZE ===== -->
-<div class="dash-card" data-aos="fade-up" data-aos-delay="100">
-    <div class="head"><i class="fas fa-map-marked-alt"></i> Live Emergency Map</div>
-    <div class="body p-0">
-        <div id="emergencyMap"></div>
+<!-- ============================================ -->
+<!-- REAL-TIME MULTI-USER TRACKING MAP (NEW)      -->
+<!-- ============================================ -->
+<div class="page-card mb-4" data-aos="fade-up">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <i class="fas fa-map-marked-alt me-2"></i> 
+                Real-Time Live Tracking Map
+                <span class="badge bg-danger ms-2" id="liveBadge">
+                    <i class="fas fa-circle" style="font-size: 8px;"></i> LIVE
+                </span>
+            </div>
+            <div class="map-filters mt-2 mt-sm-0">
+                <button class="btn btn-sm btn-outline-light filter-btn active" data-filter="all" onclick="filterMapByType('all')">
+                    <i class="fas fa-globe"></i> All
+                </button>
+                <button class="btn btn-sm btn-outline-light filter-btn" data-filter="emergencies" onclick="filterMapByType('emergencies')">
+                    <i class="fas fa-exclamation-triangle text-danger"></i> Emergencies
+                </button>
+                <button class="btn btn-sm btn-outline-light filter-btn" data-filter="volunteers" onclick="filterMapByType('volunteers')">
+                    <i class="fas fa-hands-helping text-success"></i> Volunteers
+                </button>
+                <button class="btn btn-sm btn-outline-light filter-btn" data-filter="ngos" onclick="filterMapByType('ngos')">
+                    <i class="fas fa-building text-primary"></i> NGOs/Camps
+                </button>
+                <button class="btn btn-sm btn-outline-light filter-btn" data-filter="citizens" onclick="filterMapByType('citizens')">
+                    <i class="fas fa-user-check text-info"></i> Safe Citizens
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div id="realtimeMap" style="height: 550px; width: 100%;"></div>
+    </div>
+    <div class="card-footer bg-light">
+        <div class="row text-center">
+            <div class="col-3">
+                <small class="text-muted">🚨 Active Emergencies</small>
+                <h5 class="mb-0 text-danger" id="emergencyCount">0</h5>
+            </div>
+            <div class="col-3">
+                <small class="text-muted">🤝 Online Volunteers</small>
+                <h5 class="mb-0 text-success" id="volunteerCount">0</h5>
+            </div>
+            <div class="col-3">
+                <small class="text-muted">🏢 Active NGOs</small>
+                <h5 class="mb-0 text-primary" id="ngoCount">0</h5>
+            </div>
+            <div class="col-3">
+                <small class="text-muted">✅ Safe Check-ins</small>
+                <h5 class="mb-0 text-info" id="citizenCount">0</h5>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- ===== REQUESTS ===== -->
-<div class="dash-card" data-aos="fade-up" data-aos-delay="150">
-    <div class="head"><i class="fas fa-list"></i> Recent Emergency Requests</div>
-    <div class="body p-0">
-        <div class="table-scroll">
-            <table>
+<div class="page-card mb-4" data-aos="fade-up">
+    <div class="card-header bg-dark"><i class="fas fa-list me-2"></i> Recent Emergency Requests</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
                 <thead><tr><th>ID</th><th>Title</th><th>Type</th><th>Priority</th><th>Status</th><th>Reporter</th><th>Action</th></tr></thead>
-                <tbody id="emergencyTableBody">
-                    <tr><td colspan="7" class="loading-text"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>
-                </tbody>
+                <tbody id="emergencyTableBody"><tr><td colspan="7" class="text-center py-4">Loading...</td></tr></tbody>
             </table>
         </div>
     </div>
 </div>
 
-<!-- ===== CHARTS ===== -->
-<div class="row g-3">
-    <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200">
-        <div class="dash-card">
-            <div class="head" style="background:rgba(13,202,240,0.05);"><i class="fas fa-chart-bar" style="color:#0dcaf0;"></i> Requests by Category</div>
-            <div class="body"><canvas id="categoryChart" height="160"></canvas></div>
+<div class="row g-4">
+    <div class="col-lg-6" data-aos="fade-up">
+        <div class="page-card">
+            <div class="card-header bg-info"><i class="fas fa-chart-bar me-2"></i> Requests by Category</div>
+            <div class="card-body"><canvas id="categoryChart" height="220"></canvas></div>
         </div>
     </div>
-    <div class="col-lg-6" data-aos="fade-up" data-aos-delay="250">
-        <div class="dash-card">
-            <div class="head" style="background:rgba(40,167,69,0.05);"><i class="fas fa-chart-pie" style="color:#28a745;"></i> Priority Distribution</div>
-            <div class="body"><canvas id="priorityChart" height="160"></canvas></div>
+    <div class="col-lg-6" data-aos="fade-up">
+        <div class="page-card">
+            <div class="card-header bg-success"><i class="fas fa-chart-pie me-2"></i> Priority Distribution</div>
+            <div class="card-body"><canvas id="priorityChart" height="220"></canvas></div>
         </div>
     </div>
 </div>
 
+<style>
+/* Real-time Map Styles */
+@keyframes pulse-marker {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+@keyframes pulse-blue {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+}
+.custom-marker { background: transparent !important; border: none !important; }
+.live-dot {
+    position: absolute; bottom: -2px; right: -2px;
+    width: 10px; height: 10px; background: #4ade80;
+    border-radius: 50%; border: 2px solid white;
+    animation: pulse-dot 1s infinite;
+}
+.map-legend {
+    background: white; padding: 12px; border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1); font-size: 12px; min-width: 140px;
+}
+.legend-title { font-weight: bold; margin-bottom: 8px; }
+.legend-marker {
+    display: inline-block; width: 16px; height: 16px;
+    border-radius: 50%; margin-right: 8px;
+}
+.legend-marker.emergency { background: #dc3545; }
+.legend-marker.volunteer { background: #28a745; }
+.legend-marker.ngo { background: #0d6efd; }
+.legend-marker.citizen { background: #17a2b8; }
+.pulse-dot {
+    display: inline-block; width: 10px; height: 10px;
+    background: #4ade80; border-radius: 50%; margin-right: 8px;
+    animation: pulse-dot 1s infinite;
+}
+.filter-btn { margin: 0 2px; transition: all 0.3s; }
+.filter-btn.active { background: #dc3545; color: white; border-color: #dc3545; }
+#liveBadge { animation: pulse-dot 1.5s infinite; }
+</style>
+
 <script>
-// ===== COUNTER ANIMATION =====
-document.addEventListener('DOMContentLoaded', function() {
-    const counters = document.querySelectorAll('.counter');
-    const animate = (el) => {
-        const target = parseInt(el.dataset.target) || 0;
-        const duration = 2000;
-        const start = performance.now();
-        const update = (now) => {
-            const p = Math.min((now - start) / duration, 1);
-            const eased = 1 - Math.pow(1 - p, 4);
-            el.textContent = Math.floor(eased * target).toLocaleString();
-            if (p < 1) requestAnimationFrame(update);
-            else el.textContent = target.toLocaleString();
-        };
-        requestAnimationFrame(update);
+// ============================================
+// REAL-TIME MAP JAVASCRIPT
+// ============================================
+let realtimeMap = null;
+let mapLayers = { emergencies: [], volunteers: [], ngos: [], citizens: [] };
+let refreshInterval = null;
+let selectedFilter = 'all';
+let userLocationMarker = null;
+let watchId = null;
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function getMarkerIcon(type, color, isLive = false) {
+    const colors = {
+        danger: '#dc3545', warning: '#ffc107',
+        success: '#28a745', primary: '#0d6efd', info: '#17a2b8'
     };
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(e => { if (e.isIntersecting) { animate(e.target); observer.unobserve(e.target); } });
-    }, { threshold: 0.3 });
-    counters.forEach(c => observer.observe(c));
-});
-
-// ===== LOAD REQUESTS =====
-function loadRequests() {
-    const tbody = document.getElementById('emergencyTableBody');
-    if (!tbody) return;
-    fetch('<?php echo SITE_URL; ?>api/get_emergencies.php')
-        .then(r => r.json())
-        .then(data => {
-            if (!data.success || !data.data.length) {
-                tbody.innerHTML = '<tr><td colspan="7" class="loading-text">No requests found</td></tr>';
-                return;
-            }
-            let html = '';
-            data.data.slice(0, 8).forEach(r => {
-                const pClass = r.priority === 'critical' ? 'badge-priority critical' : r.priority === 'high' ? 'badge-priority high' : r.priority === 'medium' ? 'badge-priority medium' : 'badge-priority low';
-                const sClass = 'badge-status ' + r.status;
-                html += `<tr>
-                    <td>#${r.id}</td>
-                    <td>${escapeHtml(r.title || '—')}</td>
-                    <td><span style="background:#f5f6fa;padding:2px 10px;border-radius:6px;font-size:0.7rem;color:#5a607a;">${escapeHtml(r.request_type || '—')}</span></td>
-                    <td><span class="${pClass}">${r.priority}</span></td>
-                    <td><span class="${sClass}">${r.status}</span></td>
-                    <td>${escapeHtml(r.reporter_name || '—')}</td>
-                    <td><a href="<?php echo SITE_URL; ?>view_request.php?id=${r.id}" class="btn-sm-outline"><i class="fas fa-eye"></i> View</a></td>
-                </tr>`;
-            });
-            tbody.innerHTML = html;
-        })
-        .catch(() => tbody.innerHTML = '<tr><td colspan="7" class="loading-text">Failed to load</td></tr>');
+    const icons = {
+        emergency: { icon: '⚠️', size: 32, pulse: true },
+        volunteer: { icon: '🤝', size: 28, pulse: isLive },
+        ngo: { icon: '🏢', size: 30, pulse: false },
+        citizen: { icon: '✅', size: 26, pulse: false }
+    };
+    const config = icons[type] || icons.emergency;
+    return L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="width:${config.size}px;height:${config.size}px;
+                    background:${colors[color]||colors.danger};border-radius:50%;
+                    display:flex;align-items:center;justify-content:center;
+                    color:white;font-size:${config.size-8}px;
+                    border:2px solid white;
+                    box-shadow:0 2px 10px rgba(0,0,0,0.3);
+                    ${config.pulse?'animation:pulse-marker 1.5s infinite;':''}
+                    cursor:pointer;">
+                    ${config.icon}${isLive?'<span class="live-dot"></span>':''}
+                </div>`,
+        iconSize: [config.size, config.size],
+        popupAnchor: [0, -config.size/2]
+    });
 }
 
-function escapeHtml(t) { if (!t) return '—'; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
-
-// ===== CHARTS =====
-function initCharts() {
-    const c1 = document.getElementById('categoryChart');
-    if (c1) {
-        new Chart(c1, {
-            type: 'bar',
-            data: {
-                labels: ['Food', 'Water', 'Medical', 'Shelter', 'Rescue', 'Other'],
-                datasets: [{
-                    label: 'Requests',
-                    data: [12, 8, 15, 6, 10, 4],
-                    backgroundColor: ['rgba(220,53,69,0.7)', 'rgba(13,202,240,0.7)', 'rgba(40,167,69,0.7)', 'rgba(255,193,7,0.7)', 'rgba(111,66,193,0.7)', 'rgba(108,117,125,0.7)'],
-                    borderColor: ['#dc3545', '#0dcaf0', '#28a745', '#ffc107', '#6f42c1', '#6c757d'],
-                    borderWidth: 2,
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: { 
-                        display: true,
-                        labels: { color: '#1a1a2e', font: { size: 11 } }
-                    }
-                },
-                scales: {
-                    y: { 
-                        beginAtZero: true, 
-                        grid: { color: 'rgba(0,0,0,0.06)' }, 
-                        ticks: { color: '#8e95a9' } 
-                    },
-                    x: { 
-                        grid: { display: false }, 
-                        ticks: { color: '#8e95a9' } 
-                    }
-                }
-            }
-        });
-    }
-
-    const c2 = document.getElementById('priorityChart');
-    if (c2) {
-        new Chart(c2, {
-            type: 'doughnut',
-            data: {
-                labels: ['Critical', 'High', 'Medium', 'Low'],
-                datasets: [{
-                    data: [8, 12, 20, 15],
-                    backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#28a745'],
-                    borderColor: ['#ffffff', '#ffffff', '#ffffff', '#ffffff'],
-                    borderWidth: 3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { 
-                            color: '#1a1a2e', 
-                            padding: 12, 
-                            usePointStyle: true, 
-                            pointStyle: 'circle',
-                            font: { size: 12, weight: '500' }
-                        }
-                    }
-                },
-                cutout: '60%'
-            }
-        });
-    }
-}
-
-// ===== MAP =====
-function initMap() {
-    const el = document.getElementById('emergencyMap');
-    if (!el) return;
-    const map = L.map('emergencyMap').setView([20.5937, 78.9629], 5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
-        attribution: '© OpenStreetMap' 
-    }).addTo(map);
+function initRealtimeMap() {
+    const mapContainer = document.getElementById('realtimeMap');
+    if (!mapContainer) return;
+    realtimeMap = L.map('realtimeMap').setView([20.5937, 78.9629], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors', maxZoom: 19
+    }).addTo(realtimeMap);
+    L.control.scale().addTo(realtimeMap);
     
-    fetch('<?php echo SITE_URL; ?>api/get_emergencies.php')
-        .then(r => r.json())
-        .then(data => {
-            if (!data.success) return;
-            data.data.forEach(e => {
-                if (!e.latitude || !e.longitude) return;
-                const color = e.priority === 'critical' ? '#dc3545' : 
-                             e.priority === 'high' ? '#fd7e14' : 
-                             e.priority === 'medium' ? '#ffc107' : '#28a745';
-                const icon = L.divIcon({
-                    className: 'custom-div-icon',
-                    html: `<div style="background:${color};width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);"></div>`,
-                    iconSize: [12, 12]
-                });
-                L.marker([e.latitude, e.longitude], { icon })
-                    .bindPopup(`<b>${e.title}</b><br>${e.request_type} · ${e.priority}<br><small>${e.status}</small>`)
-                    .addTo(map);
-            });
+    const legend = L.control({ position: 'bottomright' });
+    legend.onAdd = function() {
+        const div = L.DomUtil.create('div', 'map-legend');
+        div.innerHTML = `
+            <div class="legend-title">📍 Map Legend</div>
+            <div><span class="legend-marker emergency"></span> Emergency</div>
+            <div><span class="legend-marker volunteer"></span> Volunteer</div>
+            <div><span class="legend-marker ngo"></span> NGO/Camp</div>
+            <div><span class="legend-marker citizen"></span> Safe Citizen</div>
+            <hr><div><span class="pulse-dot"></span> Live (Active now)</div>
+        `;
+        return div;
+    };
+    legend.addTo(realtimeMap);
+    startRealTimeUpdates();
+    trackMyLocation();
+}
+
+function clearAllMarkers() {
+    Object.keys(mapLayers).forEach(key => {
+        mapLayers[key].forEach(marker => {
+            if (realtimeMap) realtimeMap.removeLayer(marker);
         });
+        mapLayers[key] = [];
+    });
 }
 
-// ===== INIT =====
+async function fetchLiveLocations() {
+    try {
+        const response = await fetch(SITE_URL + 'api/get_live_locations.php?type=' + selectedFilter);
+        const data = await response.json();
+        if (!data.success) return;
+        clearAllMarkers();
+        
+        data.data.forEach(item => {
+            if (!item.latitude || !item.longitude) return;
+            let marker = null, popupContent = '';
+            
+            if (item.marker_type === 'emergency') {
+                marker = L.marker([parseFloat(item.latitude), parseFloat(item.longitude)], {
+                    icon: getMarkerIcon('emergency', item.color)
+                });
+                popupContent = `
+                    <div class="emergency-popup">
+                        <h6><i class="fas fa-exclamation-triangle"></i> ${escapeHtml(item.title)}</h6>
+                        <p><strong>Type:</strong> ${item.request_type}</p>
+                        <p><strong>Priority:</strong> <span class="badge-${item.priority}">${item.priority}</span></p>
+                        <p><strong>Status:</strong> ${item.status}</p>
+                        <p><strong>Reporter:</strong> ${escapeHtml(item.reporter_name)}</p>
+                        <a href="${SITE_URL}view_request.php?id=${item.id}" class="btn btn-sm btn-danger mt-2">View →</a>
+                    </div>
+                `;
+                mapLayers.emergencies.push(marker);
+            } else if (item.marker_type === 'volunteer') {
+                const isLive = item.is_online && new Date(item.last_update) > new Date(Date.now() - 5*60000);
+                marker = L.marker([parseFloat(item.latitude), parseFloat(item.longitude)], {
+                    icon: getMarkerIcon('volunteer', item.color, isLive)
+                });
+                popupContent = `
+                    <div class="volunteer-popup">
+                        <h6><i class="fas fa-hands-helping"></i> ${escapeHtml(item.full_name)}</h6>
+                        <p><strong>Status:</strong> <span class="badge bg-${item.availability==='available'?'success':'warning'}">${item.availability}</span></p>
+                        <p><strong>Tasks:</strong> ${item.total_tasks_completed||0}</p>
+                        <p><strong>Location:</strong> ${escapeHtml(item.location_name||'—')}</p>
+                        ${isLive?'<p class="text-success"><i class="fas fa-circle"></i> Active Now</p>':''}
+                    </div>
+                `;
+                mapLayers.volunteers.push(marker);
+            } else if (item.marker_type === 'ngo') {
+                marker = L.marker([parseFloat(item.latitude), parseFloat(item.longitude)], {
+                    icon: getMarkerIcon('ngo', item.color)
+                });
+                popupContent = `
+                    <div class="ngo-popup">
+                        <h6><i class="fas fa-building"></i> ${escapeHtml(item.organization_name)}</h6>
+                        ${item.camp_name?`<p><strong>Camp:</strong> ${escapeHtml(item.camp_name)} (${item.camp_type})</p>`:''}
+                        <p><strong>Contact:</strong> ${escapeHtml(item.contact_person||'—')}</p>
+                        ${item.verified?'<p class="text-success"><i class="fas fa-check-circle"></i> Verified NGO</p>':''}
+                    </div>
+                `;
+                mapLayers.ngos.push(marker);
+            } else if (item.marker_type === 'citizen') {
+                marker = L.marker([parseFloat(item.latitude), parseFloat(item.longitude)], {
+                    icon: getMarkerIcon('citizen', item.color)
+                });
+                popupContent = `
+                    <div class="citizen-popup">
+                        <h6><i class="fas fa-user-check"></i> ${escapeHtml(item.full_name)}</h6>
+                        <p><strong>Status:</strong> <span class="text-success"><i class="fas fa-shield-alt"></i> Safe</span></p>
+                        <p><strong>Location:</strong> ${escapeHtml(item.location_name||'—')}</p>
+                        <p><strong>Checked in:</strong> ${new Date(item.checked_in_at).toLocaleString()}</p>
+                        ${item.message?`<p><em>"${escapeHtml(item.message.substring(0,100))}"</em></p>`:''}
+                    </div>
+                `;
+                mapLayers.citizens.push(marker);
+            }
+            if (marker) { marker.bindPopup(popupContent); marker.addTo(realtimeMap); }
+        });
+        
+        updateStatsCounters(data.data);
+    } catch (error) { console.error('Error:', error); }
+}
+
+function updateStatsCounters(data) {
+    document.getElementById('emergencyCount').innerText = data.filter(d=>d.marker_type==='emergency').length;
+    document.getElementById('volunteerCount').innerText = data.filter(d=>d.marker_type==='volunteer').length;
+    document.getElementById('ngoCount').innerText = data.filter(d=>d.marker_type==='ngo').length;
+    document.getElementById('citizenCount').innerText = data.filter(d=>d.marker_type==='citizen').length;
+}
+
+function trackMyLocation() {
+    if (!navigator.geolocation) return;
+    watchId = navigator.geolocation.watchPosition(
+        async (position) => {
+            const { latitude, longitude } = position.coords;
+            if (userLocationMarker) { realtimeMap.removeLayer(userLocationMarker); }
+            const userIcon = L.divIcon({
+                className: 'user-location-marker',
+                html: `<div style="width:20px;height:20px;background:#0d6efd;border-radius:50%;
+                            border:2px solid white;box-shadow:0 0 0 2px #0d6efd;
+                            animation:pulse-blue 1.5s infinite;"></div>`,
+                iconSize: [20, 20]
+            });
+            userLocationMarker = L.marker([latitude, longitude], { icon: userIcon })
+                .bindPopup('<strong>📍 You are here</strong>').addTo(realtimeMap);
+            
+            let locationName = '';
+            try {
+                const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                const geoData = await geoRes.json();
+                locationName = geoData.display_name || '';
+            } catch(e) {}
+            
+            await fetch(SITE_URL + 'api/update_location.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ latitude, longitude, location_name: locationName })
+            });
+            
+            if (realtimeMap.getZoom() > 10) {
+                realtimeMap.setView([latitude, longitude], 15);
+            }
+        },
+        (error) => { console.error('Geolocation error:', error.message); },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+    );
+}
+
+function startRealTimeUpdates() {
+    fetchLiveLocations();
+    refreshInterval = setInterval(fetchLiveLocations, 10000);
+}
+
+function filterMapByType(type) {
+    selectedFilter = type;
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.filter === type) btn.classList.add('active');
+    });
+    fetchLiveLocations();
+}
+
+function stopRealTimeTracking() {
+    if (refreshInterval) clearInterval(refreshInterval);
+    if (watchId) navigator.geolocation.clearWatch(watchId);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    loadRequests();
-    initCharts();
-    setTimeout(initMap, 500);
-    setInterval(loadRequests, 30000);
-});
-
-// ===== SIDEBAR TOGGLE =====
-document.getElementById('sidebarToggle')?.addEventListener('click', function() {
-    document.getElementById('appSidebar').classList.toggle('open');
-    document.getElementById('sidebarOverlay').classList.toggle('active');
-});
-document.getElementById('sidebarOverlay')?.addEventListener('click', function() {
-    document.getElementById('appSidebar').classList.remove('open');
-    this.classList.remove('active');
-});
-
-// ===== CLOCK =====
-function updateClock() {
-    const el = document.getElementById('liveClock');
-    if (el) {
-        const now = new Date();
-        const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        el.textContent = time;
+    if (typeof SITE_URL !== 'undefined') {
+        setTimeout(function() {
+            if (document.getElementById('realtimeMap')) {
+                initRealtimeMap();
+            }
+        }, 500);
     }
-}
-setInterval(updateClock, 1000);
-updateClock();
+});
+
+window.addEventListener('beforeunload', function() {
+    if (typeof stopRealTimeTracking === 'function') stopRealTimeTracking();
+});
+
+// Auto location tracking background
+<?php if(isset($_SESSION['user_id'])): ?>
+setInterval(async function() {
+    if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(async function(position) {
+            try {
+                await fetch('<?php echo SITE_URL; ?>api/update_location.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    })
+                });
+            } catch(e) {}
+        }, function(error) {}, { enableHighAccuracy: true, timeout: 10000 });
+    }
+}, 30000);
+<?php endif; ?>
 </script>
 
 <?php
-$extra_scripts = '<script>const SITE_URL = "' . SITE_URL . '";</script>';
+$extra_scripts = '<script>const SITE_URL = "' . SITE_URL . '";</script>
+<script src="' . SITE_URL . 'assets/js/dashboard.js?v=' . time() . '"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />';
 require_once 'includes/app_footer.php';
 ?>
